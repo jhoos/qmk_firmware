@@ -48,30 +48,46 @@ static bool layers(effect_params_t* params) {
                     case KC_NO ... KC_TRANSPARENT:
                         color = (hsv_t){HSV_OFF};
                         break;
-                    case MODIFIER_KEYCODE_RANGE:
-                    case MO(_FLW):
-                    case MO(_FLM):
+                    case KC_LSFT:
+                    case KC_RSFT:
                     case TG(_NLM):
                     case KC_CAPS_LOCK:
                     case KC_NUM_LOCK:
-                        color = (hsv_t){HSV_CYAN};
+                        color = HSVT_SFT;
                         break;
-                    case KC_INS ... KC_UP:
-                        color = (hsv_t){HSV_BLUE};
+                    case KC_LCTL:
+                    case KC_RCTL:
+                    case TD_LALT:
+                        color = HSVT_CTL;
                         break;
+                    case KC_LALT:
+                    case KC_RALT:
+                        color = HSVT_ALT;
+                        break;
+                    case KC_LGUI:
+                    case MO(_FLW):
+                    case MO(_FLM):
+                        color = HSVT_GUI;
+                        break;
+                    case KC_DEL:
+                        color = default_key_color;
+                        break;
+                    case KC_HOME ... KC_PAGE_UP:
+                    case KC_END ... KC_UP:
+                        color = HSVT_ARW;
+                        break;
+                    case KC_ESC:
                     case KC_F1 ... KC_PRINT_SCREEN:
-                        color = (hsv_t){HSV_GREEN};
+                    case KC_INS:
+                        color = HSVT_FUN;
                         break;
                     case KC_P1 ... KC_PDOT:
                         if (!host_keyboard_led_state().num_lock) {
-                            color = (hsv_t){HSV_BLUE};
+                            color = HSVT_ARW;
                         }
                         break;
                     case CONSUMER_KEYCODE_RANGE:
-                        color = (hsv_t){HSV_PURPLE};
-                        break;
-                    case RGB_MATRIX_KEYCODE_RANGE:
-                        color = (hsv_t){HSV_PINK};
+                        color = g_detected_os_color;
                         break;
                     case QK_BOOT:
                         color = (hsv_t){HSV_RED};
@@ -79,8 +95,14 @@ static bool layers(effect_params_t* params) {
                     case KC_A ... KC_Z:
                     case KC_MINUS:
                         if ((host_keyboard_led_state().caps_lock && keycode != KC_MINUS) || is_caps_word_on()) {
-                            color = (hsv_t){HSV_ORANGE};
+                            color = HSVT_SFT;
                         }
+                        break;
+                    case DF(_BLW):
+                        color = HSVT_WIN;
+                        break;
+                    case DF(_BLM):
+                        color = HSVT_MAC;
                         break;
                     default:
                         color = default_key_color;
@@ -97,8 +119,20 @@ static bool layers(effect_params_t* params) {
                     }
                 }
 
-                uint16_t offset = scale16by8(tick, qadd8(rgb_matrix_config.speed, 1));
-                rgb_t    rgb    = rgb_matrix_hsv_to_rgb(reactive_math(color, offset));
+                uint16_t offset = 255;
+                switch (keycode) {
+                    case MODIFIER_KEYCODE_RANGE:
+                    case MO(_FLW):
+                    case MO(_FLM):
+                    case TD(_NLM):
+                        // don't animate these keys
+                        break;
+                    default: {
+                        offset = scale16by8(tick, qadd8(rgb_matrix_config.speed, 1));
+                        break;
+                    }
+                }
+                rgb_t rgb = rgb_matrix_hsv_to_rgb(reactive_math(color, offset));
                 rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
             }
         }
