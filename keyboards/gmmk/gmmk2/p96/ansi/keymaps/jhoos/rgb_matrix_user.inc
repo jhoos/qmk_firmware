@@ -82,8 +82,26 @@ static bool layers(effect_params_t* params) {
                         color = HSVT_FUN;
                         break;
                     case KC_P1 ... KC_PDOT:
-                        if (!host_keyboard_led_state().num_lock) {
-                            color = HSVT_ARW;
+                        if (host_keyboard_led_state().num_lock) {
+                            // num lock active, all keypad keys are normal characters
+                            color = HSVT_DEFAULT;
+                        }
+                        else {
+                            // num lock off, color keys like arrows or ins/del
+                            switch (keycode) {
+                                case KC_PDOT:
+                                    color = HSVT_DEFAULT;
+                                    break;
+                                case KC_P0:
+                                    color = HSVT_FUN;
+                                    break;
+                                case KC_P5:
+                                    color = (hsv_t){HSV_OFF};
+                                    break;
+                                default:
+                                    color = HSVT_ARW;
+                                    break;
+                            }
                         }
                         break;
                     case CONSUMER_KEYCODE_RANGE:
@@ -103,6 +121,9 @@ static bool layers(effect_params_t* params) {
                         break;
                     case DF(_BLM):
                         color = HSVT_MAC;
+                        break;
+                    case TG(_ALTW):
+                        color = IS_LAYER_ON(_ALTW) ? HSVT_ALT : HSVT_CTL;
                         break;
                     default:
                         color = default_key_color;

@@ -6,6 +6,7 @@ enum custom_layers {
     _BLW,
     _BLM,
     _NLM,
+    _ALTW,
     _FLW,
     _FLM,
 };
